@@ -76,3 +76,61 @@ async function handleLogin(event) {
     document.getElementById("errorMessage").style.display = "block";
   }
 }
+
+async function authCheck(token) {
+  const response = await fetch(`http://localhost:8000/api/user/auth`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    if (data.auth == false) {
+      window.location.href = "login.html";
+    }
+  } else {
+    window.location.href = "login.html";
+  }
+}
+
+async function searchItems(code, token) {
+  const response = await fetch("http://localhost:8000/api/user/search", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ code }),
+  });
+
+  const data = await response.json();
+  console.log(data);
+
+  return data;
+}
+
+async function saveList(name, codeList, token, userId) {
+  const response = await fetch(
+    `http://localhost:8000/api/list/save/${userId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, codeList }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (response.ok) {
+    alert("List saved successfully!");
+  } else {
+    alert(data.message || "Error saving list.");
+  }
+}

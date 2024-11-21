@@ -100,3 +100,10 @@ exports.search = async (req, res) => {
     data: filteredURLs,
   });
 };
+
+exports.userAuth = async (req, res) => {
+  res.status(200).json({
+    message: "Auth Success",
+    auth: true,
+  });
+};
