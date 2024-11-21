@@ -8,10 +8,12 @@ const {
   deleteList,
 } = require("../controller/listController");
 
-route.get("/:uid", getLists);
-route.get("/:uid/:listId", getList);
-route.delete("/:uid/:listId", deleteList);
-route.post("/save/:uid", saveList);
-route.put("/update/:listId", updateList);
+const { verifyToken } = require("../utils/middlewares/tokenVerification");
+
+route.get("/:uid", verifyToken, getLists);
+route.get("/:uid/:listId", verifyToken, getList);
+route.delete("/:uid/:listId", verifyToken, deleteList);
+route.post("/save/:uid", verifyToken, saveList);
+route.put("/update/:listId", verifyToken, updateList);
 
 module.exports = route;
