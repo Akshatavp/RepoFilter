@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View List</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .img-thumbnail {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">List Manager</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="lists.html">Your Lists</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="dashboard.html">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="logout.html">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="container mt-4">
+      <!-- Save and Back Buttons at the top -->
+      <div class="d-flex justify-content-between">
+        <button id="saveButton" class="btn btn-success mt-3">Save</button>
+        <button id="backToLists" class="btn btn-secondary mt-3">
+          Back to Lists
+        </button>
+      </div>
+
+      <h2 class="mt-4">View and Update List</h2>
+
+      <!-- List Name Update -->
+      <div class="mb-4">
+        <label for="listName" class="form-label">List Name</label>
+        <input
+          type="text"
+          id="listName"
+          class="form-control"
+          placeholder="Enter list name"
+        />
+      </div>
+
+      <h4>Links in List</h4>
+      <div id="linkList" class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Links will be dynamically inserted here -->
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js (for dropdowns, modals, etc.) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const listId = urlParams.get("listId");
+        var userId = localStorage.getItem("data");
+        const token = localStorage.getItem("token");
+
+        // Fetch the list details using the listId
+        fetchListDetails(listId, JSON.parse(userId).id, token);
+
+        // Back to lists page
+        document.getElementById("backToLists").addEventListener("click", () => {
+          window.location.href = "lists.html"; // Navigate back to the list page
+        });
+
+        // Save updates
+        document.getElementById("saveButton").addEventListener("click", () => {
+          const updatedName = document.getElementById("listName").value;
+          if (updatedName) {
+            updateListDetails(
+              listId,
+              JSON.parse(userId).id,
+              token,
+              updatedName,
+              currentList
+            );
+          } else {
+            alert("Please enter a new list name.");
+          }
+        });
+      });
+
+      // Fetch list details from the server
+      async function fetchListDetails(listId, userId, token) {
+        const response = await fetch(
+          `http://localhost:8000/api/list/${userId}/${listId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          displayListDetails(data.list);
+        } else {
+          alert(data.message || "Failed to fetch list details.");
+        }
+      }
+
+      // Display list details
+      let currentList = [];
+
+      function displayListDetails(list) {
+        document.getElementById("listName").value = list.name;
+        currentList = [...list.list]; // Save the current list of links
+
+        const linkListContainer = document.getElementById("linkList");
+        linkListContainer.innerHTML = ""; // Clear the container before adding new links
+
+        list.list.forEach((link, index) => {
+          const listItem = document.createElement("div");
+          listItem.classList.add(
+            "col", // For grid system to auto adjust on screen size
+            "mb-4"
+          );
+
+          listItem.innerHTML = `
+            <div class="card shadow-sm">
+              <img src="${link.url}" alt="${link.name}" class="card-img-top img-thumbnail">
+              <div class="card-body">
+                <h5 class="card-title">${link.name}</h5>
+                <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.url}')">Delete</button>
+              </div>
+            </div>
+          `;
+          linkListContainer.appendChild(listItem);
+        });
+      }
+
+      // Update the list details (name and links)
+      async function updateListDetails(
+        listId,
+        userId,
+        token,
+        newName,
+        updatedList
+      ) {
+        const response = await fetch(
+          `http://localhost:8000/api/list/update/${listId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: newName, codeList: updatedList }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("List updated successfully.");
+        } else {
+          alert(data.message || "Failed to update list.");
+        }
+      }
+
+      // Delete a link from the list
+      function deleteLink(linkUrl) {
+        if (confirm("Are you sure you want to delete this link?")) {
+          // Remove the link from the list
+          currentList = currentList.filter((link) => link.url !== linkUrl);
+
+          // Update the display
+          displayListDetails({
+            name: document.getElementById("listName").value,
+            list: currentList,
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
