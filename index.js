@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 var bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 const app = express();
 
 const DBconnection = require("./config/DBconnection");
@@ -16,6 +17,13 @@ app.use(cors());
 
 app.use("/api/user", userRoutes);
 app.use("/api/list", listRoutes);
+
+app.use("/helpers", express.static(path.join(__dirname, "client/helpers")));
+app.use(express.static(path.join(__dirname, "client/pages")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "client/pages/index.html"));
+});
 
 DBconnection();
 
