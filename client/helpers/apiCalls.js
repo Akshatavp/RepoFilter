@@ -1,3 +1,6 @@
+let USER_API = "http://localhost:8000/api/user";
+let LIST_API = "http://localhost:8000/api/list";
+
 async function handleSignup(event) {
   event.preventDefault();
 
@@ -18,7 +21,7 @@ async function handleSignup(event) {
   };
 
   try {
-    const response = await fetch("http://localhost:8000/api/user/signup", {
+    const response = await fetch(`${USER_API}/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +55,7 @@ async function handleLogin(event) {
   };
 
   try {
-    const response = await fetch("http://localhost:8000/api/user/login", {
+    const response = await fetch(`${USER_API}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +81,7 @@ async function handleLogin(event) {
 }
 
 async function authCheck(token) {
-  const response = await fetch(`http://localhost:8000/api/user/auth`, {
+  const response = await fetch(`${USER_API}/auth`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -98,7 +101,7 @@ async function authCheck(token) {
 }
 
 async function searchItems(code, token) {
-  const response = await fetch("http://localhost:8000/api/user/search", {
+  const response = await fetch(`${USER_API}/search`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -108,23 +111,21 @@ async function searchItems(code, token) {
   });
 
   const data = await response.json();
-  console.log(data);
 
   return data;
 }
 
+//List
+
 async function saveList(name, codeList, token, userId) {
-  const response = await fetch(
-    `http://localhost:8000/api/list/save/${userId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, codeList }),
-    }
-  );
+  const response = await fetch(`${LIST_API}/save/${userId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, codeList }),
+  });
 
   const data = await response.json();
 
@@ -132,5 +133,82 @@ async function saveList(name, codeList, token, userId) {
     alert("List saved successfully!");
   } else {
     alert(data.message || "Error saving list.");
+  }
+}
+
+async function updateListDetails(listId, userId, token, newName, updatedList) {
+  const response = await fetch(`${LIST_API}/update/${listId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: newName, codeList: updatedList }),
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    alert("List updated successfully.");
+  } else {
+    alert(data.message || "Failed to update list.");
+  }
+}
+
+async function fetchListDetails(listId, userId, token) {
+  const response = await fetch(`${LIST_API}/${userId}/${listId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    displayListDetails(data.list);
+  } else {
+    alert(data.message || "Failed to fetch list details.");
+  }
+}
+
+async function fetchLists(userId, token) {
+  const response = await fetch(`${LIST_API}/${userId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    displayLists(data.lists);
+  } else {
+    alert(data.message || "Failed to fetch lists.");
+  }
+}
+
+async function deleteList(listId) {
+  if (confirm("Are you sure you want to delete this list?")) {
+    const token = localStorage.getItem("token");
+    var userId = localStorage.getItem("data");
+    userId = JSON.parse(userId).id;
+
+    const response = await fetch(`${LIST_API}/${userId}/${listId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("List deleted successfully");
+      fetchLists(userId, token);
+    } else {
+      alert(data.message || "Failed to delete list.");
+    }
   }
 }

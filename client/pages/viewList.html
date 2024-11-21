@@ -39,7 +39,7 @@
               <a class="nav-link" href="lists.html">Your Lists</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="dashboard.html">Dashboard</a>
+              <a class="nav-link" href="index.html">Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="logout.html">Logout</a>
@@ -121,27 +121,6 @@
         });
       });
 
-      // Fetch list details from the server
-      async function fetchListDetails(listId, userId, token) {
-        const response = await fetch(
-          `http://localhost:8000/api/list/${userId}/${listId}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-          displayListDetails(data.list);
-        } else {
-          alert(data.message || "Failed to fetch list details.");
-        }
-      }
-
       // Display list details
       let currentList = [];
 
@@ -170,35 +149,6 @@
           `;
           linkListContainer.appendChild(listItem);
         });
-      }
-
-      // Update the list details (name and links)
-      async function updateListDetails(
-        listId,
-        userId,
-        token,
-        newName,
-        updatedList
-      ) {
-        const response = await fetch(
-          `http://localhost:8000/api/list/update/${listId}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name: newName, codeList: updatedList }),
-          }
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert("List updated successfully.");
-        } else {
-          alert(data.message || "Failed to update list.");
-        }
       }
 
       // Delete a link from the list

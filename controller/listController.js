@@ -51,16 +51,10 @@ exports.getLists = async (req, res) => {
 
   try {
     const lists = await List.find({ userId: uid });
-    if (lists.length > 0) {
-      res.status(200).json({
-        message: "Lists fetched successfully",
-        lists,
-      });
-    } else {
-      res.status(404).json({
-        message: "No lists found for this user",
-      });
-    }
+    res.status(200).json({
+      message: "Lists fetched successfully",
+      lists,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
