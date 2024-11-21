@@ -77,7 +77,9 @@ exports.search = async (req, res) => {
 
   const filterInput = code;
 
-  const filterRegex = new RegExp("^" + filterInput.replace(/x/g, "\\d") + "$");
+  const filterRegex = new RegExp(
+    "^" + filterInput.replace(/[a-zA-Z]/g, "\\d") + "$"
+  );
 
   const filteredCodes = Object.keys(codes).filter((code) =>
     filterRegex.test(code)

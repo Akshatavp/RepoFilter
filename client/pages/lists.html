@@ -73,6 +73,21 @@
       function displayLists(lists) {
         const listContainer = document.getElementById("listContainer");
 
+        function formatDate(dateString) {
+          const date = new Date(dateString);
+
+          const options = {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          };
+
+          return date.toLocaleString("en-US", options);
+        }
+
         var userId = localStorage.getItem("data");
         const token = localStorage.getItem("token");
 
@@ -98,16 +113,24 @@
           );
 
           listItem.innerHTML = `
+          <div>
           <div class="d-flex justify-content-between w-100">
             <div>
-              <h5>${list.name}</h5>
-            
+              <h5><span style="color:green">Name:</span> ${list.name}</h5>
             </div>
             <div>
-              <button class="btn btn-info btn-sm me-2" onclick="viewList('${list._id}')">View</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteList('${list._id}')">Delete</button>
-
+              <button class="btn btn-info btn-sm me-2" onclick="viewList('${
+                list._id
+              }')">View</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteList('${
+                list._id
+              }')">Delete</button>
             </div>
+          </div>
+          <br>
+           <p style="color:#FF5733;font-weight:600">${formatDate(
+             list.createdAt
+           )}</p>
           </div>
         `;
 

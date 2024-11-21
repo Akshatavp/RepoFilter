@@ -182,6 +182,7 @@ async function fetchLists(userId, token) {
   const data = await response.json();
 
   if (response.ok) {
+    console.log(data);
     displayLists(data.lists);
   } else {
     alert(data.message || "Failed to fetch lists.");
